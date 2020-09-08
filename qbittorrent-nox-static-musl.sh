@@ -333,22 +333,26 @@ export gawk_url="http://ftpmirror.gnu.org/gnu/gawk/$(curl http://ftpmirror.gnu.o
 # export glibc_url="http://ftpmirror.gnu.org/gnu/libc/$(curl http://ftpmirror.gnu.org/gnu/libc/ > $curl_url_data && grep -Eo 'glibc-([0-9]{1,3}[.]?)([0-9]{1,3}[.]?)([0-9]{1,3}?)\.tar.gz' $curl_url_data | sort -V | tail -1)"
 export glibc_url="http://ftpmirror.gnu.org/gnu/libc/glibc-2.31.tar.gz"
 #
-export zlib_github_tag="$(curl -H "Accept: application/vnd.github.v3+json" \
+export zlib_github_tag="$(curl -H "Authorization: token $GITHUB_TOKEN" \
+                               -H "Accept: application/vnd.github.v3+json" \
                               'https://api.github.com/repos/madler/zlib/tags?per_page=32' |
                               grep 'name' | cut -d\" -f4 | grep -Em1 '1\.2\.')"
 export zlib_url="https://github.com/madler/zlib/archive/$zlib_github_tag.tar.gz"
 #
-export icu_url="$(curl -H "Accept: application/vnd.github.v3+json" \
+export icu_url="$(curl -H "Authorization: token $GITHUB_TOKEN" \
+                       -H "Accept: application/vnd.github.v3+json" \
                       'https://api.github.com/repos/unicode-org/icu/releases/latest' |
                       grep 'browser_download_url' | cut -d\" -f4 | grep -Em1 'icu4c(.+)-src.tgz')"
 #
-export openssl_github_tag="$(curl -H "Accept: application/vnd.github.v3+json" \
+export openssl_github_tag="$(curl -H "Authorization: token $GITHUB_TOKEN" \
+                                  -H "Accept: application/vnd.github.v3+json" \
                                  'https://api.github.com/repos/openssl/openssl/tags?per_page=32' |
                                  grep 'name' | cut -d\" -f4 | grep -Em1 'OpenSSL_1_1_[0-9][a-z]')"
 export openssl_url="https://github.com/openssl/openssl/archive/$openssl_github_tag.tar.gz"
 #
 export boost_prefix='boost-'
-export boost_github_tag="$(curl -H "Accept: application/vnd.github.v3+json" \
+export boost_github_tag="$(curl -H "Authorization: token $GITHUB_TOKEN" \
+                                -H "Accept: application/vnd.github.v3+json" \
                                'https://api.github.com/repos/boostorg/boost/tags?per_page=32' |
                                grep 'name' | cut -d\" -f4 | grep -Em1 ${boost_prefix}'1\.[0-9].+')"
 export boost_version="${boost_github_tag/${boost_prefix}/}"
@@ -358,11 +362,13 @@ export boost_build_url="https://github.com/boostorg/build/archive/$boost_github_
 export boost_github_url="https://github.com/boostorg/boost.git"
 #
 export qt_version='5.15'
-export qtbase_github_tag="$(curl -H "Accept: application/vnd.github.v3+json" \
+export qtbase_github_tag="$(curl -H "Authorization: token $GITHUB_TOKEN" \
+                                 -H "Accept: application/vnd.github.v3+json" \
                                 'https://api.github.com/repos/qt/qtbase/tags?per_page=32' |
                                 grep 'name' | cut -d\" -f4 | grep -Fm1 "${qt_version}.")"
 export qtbase_github_url="https://github.com/qt/qtbase.git"
-export qttools_github_tag="$(curl -H "Accept: application/vnd.github.v3+json" \
+export qttools_github_tag="$(curl -H "Authorization: token $GITHUB_TOKEN" \
+                                  -H "Accept: application/vnd.github.v3+json" \
                                  'https://api.github.com/repos/qt/qttools/tags?per_page=32' |
                                  grep 'name' | cut -d\" -f4 | grep -Fm1 "${qt_version}.")"
 export qttools_github_url="https://github.com/qt/qttools.git"
@@ -375,7 +381,8 @@ export libtorrent_version='1.2'
 if [[ "$GITHUB_TAG" = 'master' ]]; then
     export libtorrent_github_tag="RC_${libtorrent_version//./_}"
 else
-    export libtorrent_github_tag="$(curl -H "Accept: application/vnd.github.v3+json" \
+    export libtorrent_github_tag="$(curl -H "Authorization: token $GITHUB_TOKEN" \
+                                         -H "Accept: application/vnd.github.v3+json" \
                                         'https://api.github.com/repos/arvidn/libtorrent/tags?per_page=32' |
                                         grep 'name' | cut -d\" -f4 | grep -Fm1 "libtorrent-${libtorrent_version}.")"
 fi
