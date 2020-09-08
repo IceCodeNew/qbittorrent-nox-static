@@ -332,26 +332,38 @@ export gawk_url="http://ftpmirror.gnu.org/gnu/gawk/$(curl http://ftpmirror.gnu.o
 # export glibc_url="http://ftpmirror.gnu.org/gnu/libc/$(curl http://ftpmirror.gnu.org/gnu/libc/ > $curl_url_data && grep -Eo 'glibc-([0-9]{1,3}[.]?)([0-9]{1,3}[.]?)([0-9]{1,3}?)\.tar.gz' $curl_url_data | sort -V | tail -1)"
 export glibc_url="http://ftpmirror.gnu.org/gnu/libc/glibc-2.31.tar.gz"
 #
-export zlib_github_tag="$(curl https://github.com/madler/zlib/releases > $curl_url_data && grep -Eom1 'v1.2.([0-9]{1,2})' $curl_url_data)"
+export zlib_github_tag="$(curl -H "Accept: application/vnd.github.v3+json" \
+                              'https://api.github.com/repos/madler/zlib/tags?per_page=32' |
+                              grep 'name' | cut -d\" -f4 | grep -Em1 '1\.2\.')"
 export zlib_url="https://github.com/madler/zlib/archive/$zlib_github_tag.tar.gz"
 #
-export icu_url="$(curl https://api.github.com/repos/unicode-org/icu/releases/latest > $curl_url_data && grep -Eom1 'ht(.*)icu4c(.*)-src.tgz' $curl_url_data)"
+export icu_url="$(curl -H "Accept: application/vnd.github.v3+json" \
+                      'https://api.github.com/repos/unicode-org/icu/releases/latest' |
+                      grep 'browser_download_url' | cut -d\" -f4 | grep -Em1 'icu4c(.+)-src.tgz')"
 #
-export openssl_github_tag="$(curl https://github.com/openssl/openssl/releases > $curl_url_data && grep -Eom1 'OpenSSL_1_1_([0-9][a-z])' $curl_url_data)"
+export openssl_github_tag="$(curl -H "Accept: application/vnd.github.v3+json" \
+                                 'https://api.github.com/repos/openssl/openssl/tags?per_page=32' |
+                                 grep 'name' | cut -d\" -f4 | grep -Em1 'OpenSSL_1_1_[0-9][a-z]')"
 export openssl_url="https://github.com/openssl/openssl/archive/$openssl_github_tag.tar.gz"
 #
-export boost_version="$(curl https://www.boost.org/users/download/ | sed -rn 's#(.*)e">Version (.*\.[0-9]{1,2})</s(.*)#\2#p')"
-export boost_github_tag="boost-$boost_version"
-export boost_build_github_tag="boost-$boost_version"
+export boost_prefix='boost-'
+export boost_github_tag="$(curl -H "Accept: application/vnd.github.v3+json" \
+                               'https://api.github.com/repos/boostorg/boost/tags?per_page=32' |
+                               grep 'name' | cut -d\" -f4 | grep -Em1 ${boost_prefix}'1\.[0-9].+')"
+export boost_version="${boost_github_tag/${boost_prefix}/}"
 export boost_url="https://dl.bintray.com/boostorg/release/$boost_version/source/boost_${boost_version//./_}.tar.gz"
-export boost_url_status="$(curl -o /dev/null --silent --head --write-out '%{http_code}' https://dl.bintray.com/boostorg/release/$boost_version/source/boost_${boost_version//./_}.tar.gz)"
+export boost_url_status="$(curl -o /dev/null -s --head --write-out '%{http_code}' https://dl.bintray.com/boostorg/release/$boost_version/source/boost_${boost_version//./_}.tar.gz)"
 export boost_build_url="https://github.com/boostorg/build/archive/$boost_github_tag.tar.gz"
 export boost_github_url="https://github.com/boostorg/boost.git"
 #
 export qt_version='5.15'
-export qtbase_github_tag="$(curl https://github.com/qt/qtbase/releases > $curl_url_data && grep -Eom1 "v$qt_version.([0-9]{1,2})" $curl_url_data)"
+export qtbase_github_tag="$(curl -H "Accept: application/vnd.github.v3+json" \
+                                'https://api.github.com/repos/qt/qtbase/tags?per_page=32' |
+                                grep 'name' | cut -d\" -f4 | grep -Fm1 "${qt_version}.")"
 export qtbase_github_url="https://github.com/qt/qtbase.git"
-export qttools_github_tag="$(curl https://github.com/qt/qttools/releases > $curl_url_data && grep -Eom1 "v$qt_version.([0-9]{1,2})" $curl_url_data)"
+export qttools_github_tag="$(curl -H "Accept: application/vnd.github.v3+json" \
+                                 'https://api.github.com/repos/qt/qttools/tags?per_page=32' |
+                                 grep 'name' | cut -d\" -f4 | grep -Fm1 "${qt_version}.")"
 export qttools_github_url="https://github.com/qt/qttools.git"
 #
 export libtorrent_github_url="https://github.com/arvidn/libtorrent.git"
@@ -362,7 +374,9 @@ export libtorrent_version='1.2'
 if [[ "$GITHUB_TAG" = 'master' ]]; then
     export libtorrent_github_tag="RC_${libtorrent_version//./_}"
 else
-    export libtorrent_github_tag="$(curl https://github.com/arvidn/libtorrent/releases > $curl_url_data && grep -Eom1 "v$libtorrent_version.([0-9]{1,2})" $curl_url_data)"
+    export libtorrent_github_tag="$(curl -H "Accept: application/vnd.github.v3+json" \
+                                        'https://api.github.com/repos/arvidn/libtorrent/tags?per_page=32' |
+                                        grep 'name' | cut -d\" -f4 | grep -Fm1 "libtorrent-${libtorrent_version}.")"
 fi
 #
 if [[ "$GITHUB_TAG" = 'master' ]]; then
