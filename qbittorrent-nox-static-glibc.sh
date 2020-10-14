@@ -240,13 +240,13 @@ export lib_dir="$install_dir/lib"
 ## Set some build settings we need applied
 #
 custom_flags_set () {
-    export CXXFLAGS="-std=c++14"
+    export CXXFLAGS="-std=c++14 -O2 -pipe -D_FORTIFY_SOURCE=2 -fexceptions -fstack-clash-protection -fstack-protector-strong -g -grecord-gcc-switches -Wl,-z,noexecstack,-z,relro,-z,now,-z,defs"
     export CPPFLAGS="--static -static -I$include_dir"
     export LDFLAGS="--static -static -Wl,--no-as-needed -L$lib_dir -lpthread -pthread"
 }
 #
 custom_flags_reset () {
-    export CXXFLAGS="-std=c++14"
+    export CXXFLAGS="-std=c++14 -O2 -pipe -D_FORTIFY_SOURCE=2 -fexceptions -fstack-clash-protection -fstack-protector-strong -g -grecord-gcc-switches -Wl,-z,noexecstack,-z,relro,-z,now,-z,defs"
     export CPPFLAGS=""
     export LDFLAGS=""
 }
@@ -489,7 +489,7 @@ if [[ "${!app_name_skip}" = 'no' || "$1" = "$app_name" ]]; then
     custom_flags_set
     download_file "$app_name" "${!app_url}"
     #
-    ./config --prefix="$install_dir" threads no-shared no-dso no-comp CXXFLAGS="$CXXFLAGS" CPPFLAGS="$CPPFLAGS" LDFLAGS="$LDFLAGS" 2>&1 | tee "$install_dir/logs/$app_name.log.txt"
+    ./config --prefix="$install_dir" --release no-deprecated no-shared no-dtls1-method no-tls1_1-method no-sm2 no-sm3 no-sm4 no-rc2 no-rc4 no-dso no-comp threads CXXFLAGS="$CXXFLAGS" CPPFLAGS="$CPPFLAGS" LDFLAGS="$LDFLAGS" 2>&1 | tee "$install_dir/logs/$app_name.log.txt"
     make -j$(nproc) 2>&1 | tee -a "$install_dir/logs/$app_name.log.txt"
     make install_sw install_ssldirs 2>&1 | tee -a "$install_dir/logs/$app_name.log.txt"
     #
