@@ -173,7 +173,7 @@ if [[ "$deps_installed" = 'no' ]]; then
         #
         echo -e "\n\e[32mInstalling required dependencies\e[0m\n"
         #
-        apt-get install -y build-essential pkg-config automake libtool git perl python3 python3-dev
+        apt-get install -y build-essential lld pkg-config automake libtool git perl python3 python3-dev
         #
         echo -e "\n\e[32mDependencies installed!\e[0m"
         #
@@ -182,7 +182,7 @@ if [[ "$deps_installed" = 'no' ]]; then
     else
         echo -e "\n\e[1mPlease request or install the missing core dependencies before using this script\e[0m"
         #
-        echo -e '\napt-get install -y build-essential pkg-config automake libtool git perl python3 python3-dev\n'
+        echo -e '\napt-get install -y build-essential lld pkg-config automake libtool git perl python3 python3-dev\n'
         #
         exit
     fi
@@ -242,13 +242,13 @@ export lib_dir="$install_dir/lib"
 custom_flags_set () {
     export CXXFLAGS="-std=c++14 -O2 -pipe -D_FORTIFY_SOURCE=2 -fexceptions -fstack-clash-protection -fstack-protector-strong -g -grecord-gcc-switches -Wl,-z,noexecstack,-z,relro,-z,now,-z,defs"
     export CPPFLAGS="--static -static -I$include_dir"
-    export LDFLAGS="--static -static -Wl,--no-as-needed -L$lib_dir -lpthread -pthread"
+    export LDFLAGS="-fuse-ld=lld --static -static -Wl,--no-as-needed -L$lib_dir -lpthread -pthread"
 }
 #
 custom_flags_reset () {
     export CXXFLAGS="-std=c++14 -O2 -pipe -D_FORTIFY_SOURCE=2 -fexceptions -fstack-clash-protection -fstack-protector-strong -g -grecord-gcc-switches -Wl,-z,noexecstack,-z,relro,-z,now,-z,defs"
     export CPPFLAGS=""
-    export LDFLAGS=""
+    export LDFLAGS="-fuse-ld=lld"
 }
 #
 ## Define some build specific variables
