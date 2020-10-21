@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 #
-# Copyright 2019 by userdocs and contributors
+# Copyright 2020 by userdocs and contributors
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -14,7 +14,7 @@
 #
 set -e
 #
-## Do not edit these variables. They set the default values to some critical variables.
+## Do not edit these variables. They set the default values for some critical variables.
 #
 WORKING_DIR="$(printf "$(dirname "$0")" | pwd)" # used for the cd commands to cd back to the working directory the script was executed from.
 PARAMS=""
@@ -44,6 +44,14 @@ while (( "$#" )); do
       ;;
     -m|--master)
       GITHUB_TAG='master'
+      shift
+      ;;
+    -lm|--libtorrent-master)
+      libtorrent_github_tag='lm_master'
+      shift
+      ;;
+    -qm|--qbittorrent-master)
+      qbittorrent_github_tag='qm_master'
       shift
       ;;
     -p|--proxy)
@@ -378,7 +386,7 @@ export libtorrent_github_url="https://github.com/arvidn/libtorrent.git"
 export qbittorrent_github_url="https://github.com/qbittorrent/qBittorrent.git"
 #
 export libtorrent_version='1.2'
-if [[ "$GITHUB_TAG" = 'master' ]]; then
+if [[ "$GITHUB_TAG" = 'master' || "$libtorrent_github_tag" = 'lm_master' ]]; then
     export libtorrent_github_tag="RC_${libtorrent_version//./_}"
 else
     export libtorrent_github_tag="$(curl -H "Authorization: token $GITHUB_TOKEN" \
@@ -387,7 +395,7 @@ else
                                         grep 'name' | cut -d\" -f4 | grep -Fm1 "libtorrent-${libtorrent_version}.")"
 fi
 #
-if [[ "$GITHUB_TAG" = 'master' ]]; then
+if [[ "$GITHUB_TAG" = 'master' || "$qbittorrent_github_tag" = 'qm_master' ]]; then
     export qbittorrent_github_tag="master"
 else
     export qbittorrent_github_tag="$(curl https://github.com/qbittorrent/qBittorrent/releases > $curl_url_data && grep -Eom1 'release-([0-9]{1,4}\.?)+' $curl_url_data)"
