@@ -167,7 +167,8 @@ if [[ "$deps_installed" = 'no' ]]; then
         #
         echo -e "\n\e[32mUpdating\e[0m\n"
         #
-        CDN_URL="http://dl-cdn.alpinelinux.org/alpine/latest-stable/main"
+        # CDN_URL='http://mirrors.tuna.tsinghua.edu.cn/alpine/edge/main'
+        CDN_URL='http://dl-cdn.alpinelinux.org/alpine/edge/main'
         #
         set +e
         #
@@ -182,7 +183,8 @@ if [[ "$deps_installed" = 'no' ]]; then
         #
         echo -e "\n\e[32mInstalling required dependencies\e[0m\n"
         #
-        apk add bash bash-completion build-base pkgconf autoconf automake libtool git perl python3 python3-dev linux-headers --repository="$CDN_URL"
+        apk --repository="$CDN_URL" add \
+        bash bash-completion build-base pkgconf autoconf automake libtool git perl python3 python3-dev linux-headers
         #
         echo -e "\n\e[32mDependencies installed!\e[0m"
         #
