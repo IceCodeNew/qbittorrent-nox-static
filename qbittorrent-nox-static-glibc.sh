@@ -58,8 +58,8 @@ while (( "$#" )); do
       shift
       ;;
     -p|--proxy)
-      export GIT_PROXY="-c http.sslVerify=false -c http.https://github.com.proxy=$2"
-      export CURL_PROXY="-x $2"
+      export GIT_PROXY="http.https://github.com.proxy=$2"
+      export CURL_PROXY="$2"
       shift
       ;;
     -h|--help)
@@ -270,9 +270,17 @@ export local_openssl="--with-openssl=$install_dir"
 #
 curl () {
     if [[ -z "$CURL_PROXY" ]]; then
-        "$(type -P curl)" -sSLN4q --connect-timeout 5 --retry 5 --retry-delay 10 --retry-max-time 60 "$@"
+        "$(type -P curl)" -LRN4q --connect-timeout 5 --retry 5 --retry-delay 10 --retry-max-time 60 "$@"
     else
-        "$(type -P curl)" -sSLN4q --connect-timeout 5 --retry 5 --retry-delay 10 --retry-max-time 60 --proxy-insecure ${CURL_PROXY} "$@" 
+        "$(type -P curl)" -LRN4q --connect-timeout 5 --retry 5 --retry-delay 10 --retry-max-time 60 -x "${CURL_PROXY}" "$@" 
+    fi
+}
+#
+git_clone () {
+    if [[ -z "$GIT_PROXY" ]]; then
+        git clone "$@"
+    else
+        git -c "${GIT_PROXY}" clone "$@"
     fi
 }
 #
@@ -295,7 +303,7 @@ download_folder () {
     echo -e "\n\e[32mInstalling $1\e[0m\n"
     folder_name="$install_dir/$1"
     [[ -d "$folder_name" ]] && rm -rf "$folder_name"
-    git ${GIT_PROXY} clone --no-tags --single-branch --branch "${!github_tag}" --shallow-submodules --recurse-submodules -j$(nproc) --depth 1 "${url_github}" "${folder_name}"
+    git_clone --no-tags --single-branch --branch "${!github_tag}" --shallow-submodules --recurse-submodules -j$(nproc) --depth 1 "${url_github}" "${folder_name}"
     mkdir -p "${folder_name}${subdir}"
     cd "${folder_name}${subdir}"
 }
@@ -381,7 +389,7 @@ export qttools_github_url="https://github.com/qt/qttools.git"
 #
 export libtorrent_github_url="https://github.com/arvidn/libtorrent.git"
 #
-export qbittorrent_github_url="https://github.com/qbittorrent/qBittorrent.git"
+export qbittorrent_github_url="https://github.com/IceCodeNew/qBittorrent-Enhanced-Edition.git"
 #
 export libtorrent_version='1.2'
 # if [[ "$GITHUB_TAG" = 'master' || "$libtorrent_github_tag" = 'lm_master' ]]; then
@@ -621,10 +629,21 @@ application_name qbittorrent
 #
 if [[ "${!app_name_skip}" = 'no' ]] || [[ "$1" = "$app_name" ]]; then
     custom_flags_set
+    download_folder () {
+        github_tag="${1}_github_tag"
+        url_github="${2}"
+        [[ -n "$3" ]] && subdir="/$3" || subdir=""
+        echo -e "\n\e[32mInstalling $1\e[0m\n"
+        folder_name="$install_dir/$1"
+        [[ -d "$folder_name" ]] && rm -rf "$folder_name"
+        git_clone --no-tags --single-branch --shallow-submodules --recurse-submodules -j$(nproc) --depth 1 "${url_github}" "${folder_name}"
+        mkdir -p "${folder_name}${subdir}"
+        cd "${folder_name}${subdir}"
+    }
     download_folder "$app_name" "${!app_github_url}"
     #
-    ./bootstrap.sh 2>&1 | tee "$install_dir/logs/$app_name.log.txt"
-    ./configure --prefix="$install_dir" "$local_boost" --disable-gui CXXFLAGS="$CXXFLAGS" CPPFLAGS="$CPPFLAGS" LDFLAGS="$LDFLAGS -l:libboost_system.a" openssl_CFLAGS="-I$include_dir" openssl_LIBS="-L$lib_dir -l:libcrypto.a -l:libssl.a" libtorrent_CFLAGS="-I$include_dir" libtorrent_LIBS="-L$lib_dir -l:libtorrent.a" zlib_CFLAGS="-I$include_dir" zlib_LIBS="-L$lib_dir -l:libz.a" QT_QMAKE="$install_dir/bin" 2>&1 | tee -a "$install_dir/logs/$app_name.log.txt"
+    # ./bootstrap.sh 2>&1 | tee "$install_dir/logs/$app_name.log.txt"
+    ./configure --prefix="$install_dir" "$local_boost" --disable-gui --enable-systemd CXXFLAGS="$CXXFLAGS" CPPFLAGS="$CPPFLAGS" LDFLAGS="$LDFLAGS -l:libboost_system.a" openssl_CFLAGS="-I$include_dir" openssl_LIBS="-L$lib_dir -l:libcrypto.a -l:libssl.a" libtorrent_CFLAGS="-I$include_dir" libtorrent_LIBS="-L$lib_dir -l:libtorrent.a" zlib_CFLAGS="-I$include_dir" zlib_LIBS="-L$lib_dir -l:libz.a" QT_QMAKE="$install_dir/bin" 2>&1 | tee -a "$install_dir/logs/$app_name.log.txt"
     #
     sed -i 's/-lboost_system//' conf.pri
     sed -i 's/-lcrypto//' conf.pri
@@ -634,6 +653,7 @@ if [[ "${!app_name_skip}" = 'no' ]] || [[ "$1" = "$app_name" ]]; then
     make install 2>&1 | tee -a "$install_dir/logs/$app_name.log.txt"
     #
     [[ -f "$install_dir/bin/qbittorrent-nox" ]] && cp -f "$install_dir/bin/qbittorrent-nox" "$install_dir/completed/qbittorrent-nox"
+    echo "v4.1.9.1-$(TZ=':Asia/Taipei' date -I | tr -d '-')-$(git rev-parse --short HEAD)" > "$install_dir/completed/release_git_tag"
     #
     delete_function "$app_name" last
 else
