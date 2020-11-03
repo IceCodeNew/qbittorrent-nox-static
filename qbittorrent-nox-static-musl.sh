@@ -140,7 +140,6 @@ modules='^(all|zlib|icu|openssl|boost_build|boost|qtbase|qttools|libtorrent|qbit
 [[ "$1" = 'all' ]] && skip_qbittorrent='no' || skip_qbittorrent='yes'
 skip_zlib='yes'
 skip_openssl='yes'
-skip_libtorrent='yes'
 #
 ## Set this to assume yes unless set to no by a dependency check.
 #
@@ -190,11 +189,6 @@ if [[ "$deps_installed" = 'no' ]]; then
         bash bash-completion build-base pkgconf autoconf automake libtool git perl python3 python3-dev linux-headers \
         zlib-dev zlib-static \
         openssl openssl-dev openssl-libs-static
-        #
-        apk update --repository="${CDN_URL/main/testing}"
-        apk upgrade --repository="${CDN_URL/main/testing}"
-        apk --repository="${CDN_URL/main/testing}" add \
-        libtorrent-rasterbar-dev libtorrent-rasterbar-static
         #
         echo -e "\n\e[32mDependencies installed!\e[0m"
         #
@@ -604,7 +598,7 @@ if [[ "${!app_name_skip}" = 'no' ]] || [[ "$1" = "$app_name" ]]; then
     download_folder "$app_name" "${!app_github_url}"
     #
     # ./bootstrap.sh 2>&1 | tee "$install_dir/logs/$app_name.log.txt"
-    ./configure --prefix="$install_dir" "$local_boost" --disable-gui --enable-systemd CXXFLAGS="$CXXFLAGS" CPPFLAGS="$CPPFLAGS" LDFLAGS="$LDFLAGS -l:libboost_system.a" openssl_CFLAGS="-I/usr/include/openssl" openssl_LIBS="-L/usr/lib -l:libcrypto.a -l:libssl.a" libtorrent_CFLAGS="-I/usr/include/libtorrent" libtorrent_LIBS="-L/usr/lib -l:libtorrent-rasterbar.a" zlib_CFLAGS="-I/usr/include" zlib_LIBS="-L/lib -l:libz.a" QT_QMAKE="$install_dir/bin" 2>&1 | tee -a "$install_dir/logs/$app_name.log.txt"
+    ./configure --prefix="$install_dir" "$local_boost" --disable-gui --enable-systemd CXXFLAGS="$CXXFLAGS" CPPFLAGS="$CPPFLAGS" LDFLAGS="$LDFLAGS -l:libboost_system.a" openssl_CFLAGS="-I/usr/include/openssl" openssl_LIBS="-L/usr/lib -l:libcrypto.a -l:libssl.a" libtorrent_CFLAGS="-I$include_dir" libtorrent_LIBS="-L$lib_dir -l:libtorrent.a" zlib_CFLAGS="-I/usr/include" zlib_LIBS="-L/lib -l:libz.a" QT_QMAKE="$install_dir/bin" 2>&1 | tee -a "$install_dir/logs/$app_name.log.txt"
     #
     sed -i 's/-lboost_system//' conf.pri
     sed -i 's/-lcrypto//' conf.pri
