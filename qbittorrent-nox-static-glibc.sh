@@ -350,11 +350,11 @@ export icu_url="$(curl -H "Authorization: token $GITHUB_TOKEN" \
                       'https://api.github.com/repos/unicode-org/icu/releases/latest' |
                       grep 'browser_download_url' | cut -d\" -f4 | grep -Em1 'icu4c(.+)-src.tgz')"
 #
-export openssl_github_tag="$(curl -H "Authorization: token $GITHUB_TOKEN" \
-                                  -H "Accept: application/vnd.github.v3+json" \
-                                 'https://api.github.com/repos/openssl/openssl/tags?per_page=32' |
-                                 grep 'name' | cut -d\" -f4 | grep -Em1 'OpenSSL_1_1_[0-9][a-z]')"
-export openssl_url="https://github.com/openssl/openssl/archive/$openssl_github_tag.tar.gz"
+# export openssl_github_tag="$(curl -H "Authorization: token $GITHUB_TOKEN" \
+#                                   -H "Accept: application/vnd.github.v3+json" \
+#                                  'https://api.github.com/repos/openssl/openssl/tags?per_page=32' |
+#                                  grep 'name' | cut -d\" -f4 | grep -Em1 'OpenSSL_1_1_[0-9][a-z]')"
+export openssl_url="https://github.com/openssl/openssl/archive/OpenSSL_1_1_1-stable.tar.gz"
 #
 export boost_prefix='boost-'
 export boost_github_tag="$(curl -H "Authorization: token $GITHUB_TOKEN" \
@@ -384,14 +384,14 @@ export libtorrent_github_url="https://github.com/arvidn/libtorrent.git"
 export qbittorrent_github_url="https://github.com/qbittorrent/qBittorrent.git"
 #
 export libtorrent_version='1.2'
-if [[ "$GITHUB_TAG" = 'master' || "$libtorrent_github_tag" = 'lm_master' ]]; then
-    export libtorrent_github_tag="RC_${libtorrent_version//./_}"
-else
-    export libtorrent_github_tag="$(curl -H "Authorization: token $GITHUB_TOKEN" \
-                                         -H "Accept: application/vnd.github.v3+json" \
-                                        'https://api.github.com/repos/arvidn/libtorrent/tags?per_page=32' |
-                                        grep 'name' | cut -d\" -f4 | grep -Fm1 "libtorrent-${libtorrent_version}.")"
-fi
+# if [[ "$GITHUB_TAG" = 'master' || "$libtorrent_github_tag" = 'lm_master' ]]; then
+#     export libtorrent_github_tag="RC_${libtorrent_version//./_}"
+# else
+#     export libtorrent_github_tag="$(curl -H "Authorization: token $GITHUB_TOKEN" \
+#                                          -H "Accept: application/vnd.github.v3+json" \
+#                                         'https://api.github.com/repos/arvidn/libtorrent/tags?per_page=32' |
+#                                         grep 'name' | cut -d\" -f4 | grep -Fm1 "libtorrent-${libtorrent_version}.")"
+# fi
 #
 if [[ "$GITHUB_TAG" = 'master' || "$qbittorrent_github_tag" = 'qm_master' ]]; then
     export qbittorrent_github_tag="master"
@@ -589,6 +589,17 @@ if [[ "${!app_name_skip}" = 'no' ]] || [[ "$1" = "$app_name" ]]; then
         echo -e "\n\e[91mWarning\e[0m - You must install the boost module before you can use the libtorrent module"
     else
         custom_flags_set
+        download_folder () {
+            github_tag="${1}_github_tag"
+            url_github="${2}"
+            [[ -n "$3" ]] && subdir="/$3" || subdir=""
+            echo -e "\n\e[32mInstalling $1\e[0m\n"
+            folder_name="$install_dir/$1"
+            [[ -d "$folder_name" ]] && rm -rf "$folder_name"
+            git_clone --no-tags --single-branch --shallow-submodules --recurse-submodules -j$(nproc) --depth 1 --branch 'RC_1_2' "${url_github}" "${folder_name}"
+            mkdir -p "${folder_name}${subdir}"
+            cd "${folder_name}${subdir}"
+        }
         download_folder "$app_name" "${!app_github_url}"
         #
         export BOOST_ROOT="$install_dir/boost"
