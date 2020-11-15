@@ -620,7 +620,7 @@ if [[ "${!app_name_skip}" = 'no' ]] || [[ "$1" = "$app_name" ]]; then
         export BOOST_INCLUDEDIR="$install_dir/boost"
         export BOOST_BUILD_PATH="$install_dir/boost"
         #
-        "$install_dir/bin/b2" -j$(nproc) python="$python_short_version" dht=on encryption=on crypto=openssl i2p=on extensions=on variant=release threading=multi link=static boost-link=static runtime-link=static cxxstd=14 cxxflags="$CXXFLAGS" cflags="$CPPFLAGS" linkflags="$LDFLAGS" toolset=gcc install --prefix="$install_dir" 2>&1 | tee "$install_dir/logs/$app_name.log.txt"
+        "$install_dir/bin/b2" -j$(nproc) python="$python_short_version" dht=on encryption=on crypto=openssl i2p=on extensions=on variant=release threading=multi link=static boost-link=static runtime-link=static fpic=on cxxstd=14 cxxflags="$CXXFLAGS" cflags="$CPPFLAGS" linkflags="$LDFLAGS" toolset=gcc install --prefix="$install_dir" 2>&1 | tee "$install_dir/logs/$app_name.log.txt"
         #
         delete_function boost
         delete_function "$app_name"
